@@ -98,9 +98,32 @@ MONDAY_API_TOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRhIjp7InVzZXJfaWQiOj
 
 ### 2. Find Your Board ID
 
-1. Open your board in Monday.com
-2. The board ID is in the URL: `https://monday.com/boards/123456789/...`
-3. In this example, `123456789` is your board ID
+#### **Step-by-Step Guide:**
+
+1. **Open Your Board**
+   - Go to Monday.com and open any board you want to automate
+   - Navigate to your workspace
+
+2. **Check the URL**
+   - Look at the browser address bar
+   - The URL format is: `https://monday.com/boards/XXXXXXXXX/...`
+   - The number is your **Board ID**
+
+3. **Copy the Board ID**
+   - For example: `https://monday.com/boards/1234567890/`
+   - Your Board ID is: `1234567890`
+
+4. **Get Multiple Board IDs (optional)**
+   - You can automate multiple boards
+   - Simply repeat this process for each board
+   - Store them in your `.env` file
+
+#### **Example URLs:**
+```
+https://monday.com/boards/1234567890/              → ID: 1234567890
+https://monday.com/boards/9876543210/pulse         → ID: 9876543210
+https://monday.com/boards/5555555555/views/table   → ID: 5555555555
+```
 
 ### 3. Configure Environment
 
@@ -109,6 +132,43 @@ Update `.env` with your credentials:
 MONDAY_API_TOKEN=your_api_token_here
 MONDAY_BOARD_ID=123456789
 ```
+
+### 4. Verify Your Credentials
+
+Test the connection to ensure everything works:
+
+```python
+from clients import BoardInfoFinder
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+api_token = os.getenv("MONDAY_API_TOKEN")
+board_id = int(os.getenv("MONDAY_BOARD_ID"))
+
+try:
+    finder = BoardInfoFinder(api_token)
+    info = finder.get_board_info(board_id)
+    
+    if info:
+        print(f"✅ Success! Board: {info.get('name')}")
+        print(f"   State: {info.get('state')}")
+        print(f"   Owner: {info.get('owner', {}).get('name')}")
+    else:
+        print("❌ No board found. Check your Board ID.")
+except Exception as e:
+    print(f"❌ Error: {str(e)}")
+    print("   Check your API token and permissions.")
+```
+
+Run this script to verify:
+```bash
+python test_connection.py
+```
+
+✅ If you see board information, you're all set!  
+❌ If you get an error, double-check your API token and Board ID.
 
 ## 🚀 Quick Start
 
