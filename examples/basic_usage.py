@@ -4,6 +4,7 @@ Monday.com Board Automator - Example Usage Scripts
 
 import sys
 import os
+from dotenv import load_dotenv
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -15,9 +16,27 @@ from clients import (
 )
 
 def main():
-    # Initialize with your API token
-    api_token = "YOUR_API_TOKEN"
-    board_id = 123456789  # Replace with your board ID
+    # Load environment variables from .env file
+    load_dotenv()
+    
+    # Get API token and board ID from environment variables
+    api_token = os.getenv("MONDAY_API_TOKEN")
+    board_id_str = os.getenv("MONDAY_BOARD_ID")
+    
+    # Validate credentials
+    if not api_token or api_token == "your_api_token_here":
+        print("❌ Error: Please set MONDAY_API_TOKEN in your .env file")
+        return
+    
+    if not board_id_str:
+        print("❌ Error: Please set MONDAY_BOARD_ID in your .env file")
+        return
+    
+    try:
+        board_id = int(board_id_str)
+    except ValueError:
+        print("❌ Error: MONDAY_BOARD_ID must be a valid number")
+        return
     
     print("\n" + "="*70)
     print("MONDAY BOARD AUTOMATOR - EXAMPLE USAGE")

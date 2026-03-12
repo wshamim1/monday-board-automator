@@ -40,22 +40,23 @@ class UserTasksFinder:
         query = """
         query {
             boards(ids: [%s]) {
-                items {
-                    id
-                    name
-                    created_at
-                    updated_at
-                    state
-                    column_values {
-                        id
-                        text
-                        title
-                        type
-                    }
-                    subscribers {
+                items_page(limit: 500) {
+                    items {
                         id
                         name
-                        email
+                        created_at
+                        updated_at
+                        state
+                        column_values {
+                            id
+                            text
+                            type
+                        }
+                        subscribers {
+                            id
+                            name
+                            email
+                        }
                     }
                 }
             }
@@ -64,7 +65,8 @@ class UserTasksFinder:
         
         try:
             result = self._make_request(query)
-            all_tasks = result.get("boards", [{}])[0].get("items", [])
+            items_page = result.get("boards", [{}])[0].get("items_page", {})
+            all_tasks = items_page.get("items", [])
             user_tasks = [task for task in all_tasks if any(sub.get("id") == str(user_id) for sub in task.get("subscribers", []))]
             return user_tasks
         except Exception as e:
@@ -76,10 +78,12 @@ class UserTasksFinder:
         query = """
         query {
             boards(ids: [%s]) {
-                items {
-                    subscribers {
-                        id
-                        name
+                items_page(limit: 500) {
+                    items {
+                        subscribers {
+                            id
+                            name
+                        }
                     }
                 }
             }
@@ -88,7 +92,8 @@ class UserTasksFinder:
         
         try:
             result = self._make_request(query)
-            all_tasks = result.get("boards", [{}])[0].get("items", [])
+            items_page = result.get("boards", [{}])[0].get("items_page", {})
+            all_tasks = items_page.get("items", [])
             user_counts = {}
             for task in all_tasks:
                 for subscriber in task.get("subscribers", []):

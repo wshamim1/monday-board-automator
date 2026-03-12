@@ -31,10 +31,11 @@ class OverdueTasksFinder:
     
     def list_overdue_tasks(self, board_id: int) -> List[Dict[str, Any]]:
         """List tasks with due dates that have passed"""
-        query = """query { boards(ids: [%s]) { items { id name created_at updated_at state column_values { id text title type } } } }""" % board_id
+        query = """query { boards(ids: [%s]) { items_page(limit: 500) { items { id name created_at updated_at state column_values { id text type } } } } }""" % board_id
         try:
             result = self._make_request(query)
-            all_tasks = result.get("boards", [{}])[0].get("items", [])
+            items_page = result.get("boards", [{}])[0].get("items_page", {})
+            all_tasks = items_page.get("items", [])
             now = datetime.now()
             overdue_tasks = []
             for task in all_tasks:
@@ -55,10 +56,11 @@ class OverdueTasksFinder:
     
     def list_upcoming_tasks(self, board_id: int, days: int = 7) -> List[Dict[str, Any]]:
         """List tasks with due dates coming up"""
-        query = """query { boards(ids: [%s]) { items { id name created_at updated_at state column_values { id text title type } } } }""" % board_id
+        query = """query { boards(ids: [%s]) { items_page(limit: 500) { items { id name created_at updated_at state column_values { id text type } } } } }""" % board_id
         try:
             result = self._make_request(query)
-            all_tasks = result.get("boards", [{}])[0].get("items", [])
+            items_page = result.get("boards", [{}])[0].get("items_page", {})
+            all_tasks = items_page.get("items", [])
             now = datetime.now()
             from datetime import timedelta
             future_date = now + timedelta(days=days)

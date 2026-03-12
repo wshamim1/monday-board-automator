@@ -30,7 +30,7 @@ class BoardInfoFinder:
     
     def get_board_info(self, board_id: int) -> Dict[str, Any]:
         """Get basic information about a board"""
-        query = """query { boards(ids: [%s]) { id name description state type owner { id name email } users_count } }""" % board_id
+        query = """query { boards(ids: [%s]) { id name description state board_kind owner { id name email } } }""" % board_id
         try:
             result = self._make_request(query)
             boards = result.get("boards", [])
@@ -41,12 +41,22 @@ class BoardInfoFinder:
     
     def get_board_statistics(self, board_id: int) -> Dict[str, Any]:
         """Get comprehensive statistics about the board"""
-        query = """query { boards(ids: [%s]) { id name items { id state created_at } users { id name } } }""" % board_id
+        query = """query { boards(ids: [%s]) { id name items_page(limit: 500) { items { id state created_at } } owners { id name } subscribers { id name } } }""" % board_id
         try:
             result = self._make_request(query)
             board = result.get("boards", [{}])[0]
-            items = board.get("items", [])
-            users = board.get("users", [])
+            items_page = board.get("items_page", {})
+            items = items_page.get("items", [])
+            owners = board.get("owners", [])
+            subscribers = board.get("subscribers", [])
+            
+            # Combine and deduplicate users
+            all_users = {}
+            for user in owners + subscribers:
+                user_id = user.get('id')
+                if user_id:
+                    all_users[user_id] = user
+            
             active_items = [item for item in items if item.get("state") != "archived"]
             archived_items = [item for item in items if item.get("state") == "archived"]
             return {
@@ -54,7 +64,7 @@ class BoardInfoFinder:
                 "total_items": len(items),
                 "active_items": len(active_items),
                 "archived_items": len(archived_items),
-                "total_users": len(users),
+                "total_users": len(all_users),
                 "completion_rate": (len(archived_items) / len(items) * 100) if items else 0
             }
         except Exception as e:
@@ -74,8 +84,7 @@ class BoardInfoFinder:
         print(f"ID:          {board.get('id', 'N/A')}")
         print(f"Description: {board.get('description', 'N/A')}")
         print(f"State:       {board.get('state', 'N/A')}")
-        print(f"Type:        {board.get('type', 'N/A')}")
-        print(f"Users Count: {board.get('users_count', 'N/A')}")
+        print(f"Board Kind:  {board.get('board_kind', 'N/A')}")
         owner = board.get('owner', {})
         if owner:
             print(f"Owner:       {owner.get('name', 'N/A')} ({owner.get('email', 'N/A')})")

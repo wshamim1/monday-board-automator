@@ -30,10 +30,11 @@ class StatusTasksFinder:
     
     def list_tasks_by_status(self, board_id: int, status: str) -> List[Dict[str, Any]]:
         """List tasks with a specific status"""
-        query = """query { boards(ids: [%s]) { items { id name created_at updated_at state column_values { id text title type } } } }""" % board_id
+        query = """query { boards(ids: [%s]) { items_page(limit: 500) { items { id name created_at updated_at state column_values { id text type } } } } }""" % board_id
         try:
             result = self._make_request(query)
-            all_tasks = result.get("boards", [{}])[0].get("items", [])
+            items_page = result.get("boards", [{}])[0].get("items_page", {})
+            all_tasks = items_page.get("items", [])
             filtered_tasks = []
             for task in all_tasks:
                 for column in task.get("column_values", []):
@@ -47,10 +48,11 @@ class StatusTasksFinder:
     
     def get_all_statuses(self, board_id: int) -> List[str]:
         """Get all available statuses in the board"""
-        query = """query { boards(ids: [%s]) { items { column_values { type text } } } }""" % board_id
+        query = """query { boards(ids: [%s]) { items_page(limit: 500) { items { column_values { type text } } } } }""" % board_id
         try:
             result = self._make_request(query)
-            all_tasks = result.get("boards", [{}])[0].get("items", [])
+            items_page = result.get("boards", [{}])[0].get("items_page", {})
+            all_tasks = items_page.get("items", [])
             statuses = set()
             for task in all_tasks:
                 for column in task.get("column_values", []):

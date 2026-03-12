@@ -6,6 +6,7 @@ Generate a daily standup report with team's tasks and overdue items
 import sys
 import os
 from datetime import datetime
+from dotenv import load_dotenv
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -75,7 +76,26 @@ def generate_standup_report(api_token: str, board_id: int):
 
 
 if __name__ == "__main__":
-    api_token = "YOUR_API_TOKEN"
-    board_id = 123456789
+    # Load environment variables from .env file
+    load_dotenv()
+    
+    # Get API token and board ID from environment variables
+    api_token = os.getenv("MONDAY_API_TOKEN")
+    board_id_str = os.getenv("MONDAY_BOARD_ID")
+    
+    # Validate credentials
+    if not api_token or api_token == "your_api_token_here":
+        print("❌ Error: Please set MONDAY_API_TOKEN in your .env file")
+        exit(1)
+    
+    if not board_id_str:
+        print("❌ Error: Please set MONDAY_BOARD_ID in your .env file")
+        exit(1)
+    
+    try:
+        board_id = int(board_id_str)
+    except ValueError:
+        print("❌ Error: MONDAY_BOARD_ID must be a valid number")
+        exit(1)
     
     generate_standup_report(api_token, board_id)

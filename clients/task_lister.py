@@ -49,17 +49,18 @@ class TaskLister:
         query = """
         query {
             boards(ids: [%s]) {
-                items(limit: %s) {
-                    id
-                    name
-                    created_at
-                    updated_at
-                    state
-                    column_values {
+                items_page(limit: %s) {
+                    items {
                         id
-                        text
-                        title
-                        type
+                        name
+                        created_at
+                        updated_at
+                        state
+                        column_values {
+                            id
+                            text
+                            type
+                        }
                     }
                 }
             }
@@ -68,7 +69,8 @@ class TaskLister:
         
         try:
             result = self._make_request(query)
-            tasks = result.get("boards", [{}])[0].get("items", [])
+            items_page = result.get("boards", [{}])[0].get("items_page", {})
+            tasks = items_page.get("items", [])
             return tasks
         except Exception as e:
             print(f"Error listing tasks: {str(e)}")

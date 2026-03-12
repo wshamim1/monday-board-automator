@@ -37,7 +37,7 @@ class UserLister:
     
     def list_users(self, board_id: int) -> List[Dict[str, Any]]:
         """
-        List all users with access to a board
+        List all users with access to a board (owners and subscribers)
         
         Args:
             board_id: Monday.com board ID
@@ -48,12 +48,15 @@ class UserLister:
         query = """
         query {
             boards(ids: [%s]) {
-                users {
+                owners {
                     id
                     email
                     name
-                    photo_thumb
-                    is_pending
+                }
+                subscribers {
+                    id
+                    email
+                    name
                 }
             }
         }
@@ -61,8 +64,18 @@ class UserLister:
         
         try:
             result = self._make_request(query)
-            users = result.get("boards", [{}])[0].get("users", [])
-            return users
+            board = result.get("boards", [{}])[0]
+            owners = board.get("owners", [])
+            subscribers = board.get("subscribers", [])
+            
+            # Combine and deduplicate users
+            all_users = {}
+            for user in owners + subscribers:
+                user_id = user.get('id')
+                if user_id and user_id not in all_users:
+                    all_users[user_id] = user
+            
+            return list(all_users.values())
         except Exception as e:
             print(f"Error listing users: {str(e)}")
             return []
@@ -71,19 +84,18 @@ class UserLister:
         """Print all users in a formatted table"""
         users = self.list_users(board_id)
         
-        print(f"\n{'='*80}")
+        print(f"\n{'='*70}")
         print(f"Total Users: {len(users)}")
-        print(f"{'='*80}")
-        print(f"{'ID':<15} {'Name':<25} {'Email':<40} {'Status':<10}")
-        print(f"{'-'*80}")
+        print(f"{'='*70}")
+        print(f"{'ID':<15} {'Name':<30} {'Email':<40}")
+        print(f"{'-'*70}")
         
         for user in users:
             user_id = user.get('id', 'N/A')
-            name = user.get('name', 'N/A')[:22]
+            name = user.get('name', 'N/A')[:27]
             email = user.get('email', 'N/A')[:37]
-            status = "Pending" if user.get('is_pending') else "Active"
             
-            print(f"{user_id:<15} {name:<25} {email:<40} {status:<10}")
+            print(f"{user_id:<15} {name:<30} {email:<40}")
     
     def get_user_by_email(self, board_id: int, email: str) -> Dict[str, Any]:
         """

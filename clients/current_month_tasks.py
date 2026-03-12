@@ -31,10 +31,11 @@ class CurrentMonthTasksFinder:
     
     def list_tasks_for_current_month(self, board_id: int) -> List[Dict[str, Any]]:
         """List tasks created in the current month"""
-        query = """query { boards(ids: [%s]) { items { id name created_at updated_at state column_values { id text title type } } } }""" % board_id
+        query = """query { boards(ids: [%s]) { items_page(limit: 500) { items { id name created_at updated_at state column_values { id text type } } } } }""" % board_id
         try:
             result = self._make_request(query)
-            all_tasks = result.get("boards", [{}])[0].get("items", [])
+            items_page = result.get("boards", [{}])[0].get("items_page", {})
+            all_tasks = items_page.get("items", [])
             now = datetime.now()
             current_month_tasks = []
             for task in all_tasks:
@@ -51,10 +52,11 @@ class CurrentMonthTasksFinder:
     
     def get_tasks_by_month(self, board_id: int, year: int, month: int) -> List[Dict[str, Any]]:
         """Get tasks for a specific month"""
-        query = """query { boards(ids: [%s]) { items { id name created_at updated_at state column_values { id text title type } } } }""" % board_id
+        query = """query { boards(ids: [%s]) { items_page(limit: 500) { items { id name created_at updated_at state column_values { id text type } } } } }""" % board_id
         try:
             result = self._make_request(query)
-            all_tasks = result.get("boards", [{}])[0].get("items", [])
+            items_page = result.get("boards", [{}])[0].get("items_page", {})
+            all_tasks = items_page.get("items", [])
             month_tasks = []
             for task in all_tasks:
                 try:
