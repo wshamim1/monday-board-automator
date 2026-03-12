@@ -28,6 +28,8 @@ clients/                    # Individual client modules
 └── board_info.py          # Board statistics
 
 examples/                   # Working example scripts
+├── user_list_example.py   # Simple user list (recommended start)
+├── active_tasks_example.py # Simple active tasks list
 ├── basic_usage.py         # All clients in action
 ├── daily_standup.py       # Daily report generator
 └── resource_planning.py   # Team workload analysis
@@ -37,6 +39,7 @@ README.md                   # This file
 BLOG_ARTICLE.md            # Comprehensive guide
 PROJECT_STRUCTURE.md       # Project layout details
 ```
+
 
 ## ⚡ Installation
 
@@ -55,6 +58,12 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 3. Install dependencies:
 ```bash
 pip install -r requirements.txt
+```
+
+4. Configure environment variables:
+```bash
+# The .env file is already created - just edit it with your credentials
+# Add your Monday.com API token and Board ID
 ```
 
 ## 🔧 Setup
@@ -127,10 +136,18 @@ https://monday.com/boards/5555555555/views/table   → ID: 5555555555
 
 ### 3. Configure Environment
 
-Update `.env` with your credentials:
+The `.env` file is already created in the project root. Edit it with your credentials:
+
+```bash
+# Open .env file and update these values:
+MONDAY_API_TOKEN=your_actual_api_token_here
+MONDAY_BOARD_ID=your_actual_board_id_here
 ```
-MONDAY_API_TOKEN=your_api_token_here
-MONDAY_BOARD_ID=123456789
+
+**Example `.env` file:**
+```
+MONDAY_API_TOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+MONDAY_BOARD_ID=1234567890
 ```
 
 ### 4. Verify Your Credentials
@@ -172,13 +189,41 @@ python test_connection.py
 
 ## 🚀 Quick Start
 
-### Using Individual Clients
+### Run Simple Examples (Recommended)
+
+Start with these simple, focused examples:
+
+```bash
+# List all users (owners and subscribers)
+python examples/user_list_example.py
+
+# List all active tasks
+python examples/active_tasks_example.py
+```
+
+### Run Complete Examples
+
+```bash
+# Comprehensive example with all features
+python examples/basic_usage.py
+
+# Daily standup report
+python examples/daily_standup.py
+```
+
+### Using Individual Clients in Your Code
+
+All examples automatically load credentials from `.env` file:
 
 ```python
+import os
+from dotenv import load_dotenv
 from clients import TaskLister, UserLister, BoardInfoFinder
 
-api_token = "your_api_token"
-board_id = 123456789
+# Load environment variables
+load_dotenv()
+api_token = os.getenv("MONDAY_API_TOKEN")
+board_id = int(os.getenv("MONDAY_BOARD_ID"))
 
 # List all tasks
 task_lister = TaskLister(api_token)
@@ -193,20 +238,6 @@ user_lister.print_users(board_id)
 # Get board statistics
 board_finder = BoardInfoFinder(api_token)
 board_finder.print_board_statistics(board_id)
-```
-
-### More Examples
-
-Run complete examples:
-```bash
-# Basic usage covering all clients
-python examples/basic_usage.py
-
-# Daily standup report
-python examples/daily_standup.py
-
-# Team resource planning
-python examples/resource_planning.py
 ```
 
 ## 📚 Client Reference
@@ -326,25 +357,24 @@ else:
 ## 📋 Requirements
 
 - Python 3.7+
-- requests library (>=2.28.0)
-- python-dateutil library (>=2.8.2)
+- requests (>=2.28.0)
+- python-dateutil (>=2.8.2)
+- python-dotenv (>=1.0.0)
 
 ## 🛠️ Advanced Usage
 
-### Using Environment Variables
+### Environment Variables (Already Configured)
+
+All example scripts automatically load from `.env` file. No code changes needed!
 
 ```python
-import os
+# This is already done in all examples:
 from dotenv import load_dotenv
-from clients import TaskLister
+import os
 
 load_dotenv()
-
 api_token = os.getenv("MONDAY_API_TOKEN")
 board_id = int(os.getenv("MONDAY_BOARD_ID"))
-
-lister = TaskLister(api_token)
-lister.print_tasks(board_id)
 ```
 
 ### Scheduling Reports
